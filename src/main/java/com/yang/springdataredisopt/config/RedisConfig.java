@@ -64,6 +64,7 @@ public class RedisConfig {
     @Bean
     @ConditionalOnMissingBean
     public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
+        System.out.println("================");
         return new StringRedisTemplate(redisConnectionFactory);
     }
 
