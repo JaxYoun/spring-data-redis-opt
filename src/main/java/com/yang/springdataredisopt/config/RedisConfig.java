@@ -10,6 +10,8 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.net.UnknownHostException;
 
@@ -33,6 +35,10 @@ public class RedisConfig {
         //1.实例化序列化组件，此处用jackson
         Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
 
+        //【注意：在一个项目中的多重模板应该尽量保持key和hkey的序列化组件一致，
+        // 这样才能保证不同模板对key的操作是一致的，不会出现一种模板放的key另外一种模板拿不到的问题】
+        RedisSerializer<String> stringSerializer = new StringRedisSerializer();
+
         //2.实例化Jackson的json映射器并配属性
         ObjectMapper om = new ObjectMapper();
         om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
@@ -46,9 +52,9 @@ public class RedisConfig {
         template.setConnectionFactory(redisConnectionFactory);
 
         //5.给模板配置序列化组建
-        template.setKeySerializer(jackson2JsonRedisSerializer);
+        template.setKeySerializer(stringSerializer);
+        template.setHashKeySerializer(stringSerializer);
         template.setValueSerializer(jackson2JsonRedisSerializer);
-        template.setHashKeySerializer(jackson2JsonRedisSerializer);
         template.setHashValueSerializer(jackson2JsonRedisSerializer);
         template.afterPropertiesSet();
         return template;
