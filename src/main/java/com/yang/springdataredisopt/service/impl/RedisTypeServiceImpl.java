@@ -38,7 +38,7 @@ public class RedisTypeServiceImpl implements RedisTypeService {
         User mmm = (User) myUser;
         System.out.println(mmm.getId());
 
-        Student student = Student.builder().clazz("rs2").teacher("ding").build();
+        Student student = null;//Student.builder().clazz("rs2").teacher("ding").build();
         this.redisTemplate.opsForValue().set("myStudent", student);
         this.redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(Student.class));
         Object myStudent = this.redisTemplate.opsForValue().get("myStudent");

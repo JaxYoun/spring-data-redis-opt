@@ -24,7 +24,7 @@ public class RedisaTransactionTest implements RedisTransactionService {
     @Override
     public void transaction() {
 
-        List<Boolean> txResults = stringRedisTemplate.execute(new SessionCallback<>() {
+        List<Boolean> txResults = stringRedisTemplate.execute(new SessionCallback<List<Boolean>>() {
             @Override
             public List<Boolean> execute(RedisOperations operations) throws DataAccessException {
                 operations.multi();  //开始事务

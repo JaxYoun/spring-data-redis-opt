@@ -1,14 +1,19 @@
 package com.yang.springdataredisopt.config;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
@@ -24,14 +29,13 @@ import java.net.UnknownHostException;
 public class RedisConfig {
 
     /**
-     * 这是一个比较标准的Redis模板配置样例，供参考
+     * 这是一个比较标准的Redis模板配置样例
      *
      * @param redisConnectionFactory
      * @return
      */
     @Bean
-    @ConditionalOnMissingBean
-    public RedisTemplate<String, Object> RedisTemplate(RedisConnectionFactory redisConnectionFactory) {
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         //1.实例化序列化组件，此处用jackson
         Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
 
@@ -61,6 +65,31 @@ public class RedisConfig {
     }
 
     /**
+     * 泛型支持良好的序列化器
+     *
+     * @param redisTemplate
+     * @return
+     */
+    @Bean
+    public RedisTemplate<String, Object> genericRedisTemplate(RedisTemplate redisTemplate) {
+        RedisSerializer stringSerializer = new StringRedisSerializer();
+        redisTemplate.setKeySerializer(stringSerializer);
+        redisTemplate.setHashKeySerializer(stringSerializer);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.registerModule((new SimpleModule()));
+        objectMapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
+
+        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+        redisTemplate.setValueSerializer(serializer);
+        redisTemplate.setHashValueSerializer(serializer);
+        return redisTemplate;
+    }
+
+
+    /**
      * String类型模板实例化处，这里使用Spring-data-redis内置提供的模板类
      *
      * @param redisConnectionFactory
@@ -70,7 +99,6 @@ public class RedisConfig {
     @Bean
     @ConditionalOnMissingBean
     public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        System.out.println("================");
         return new StringRedisTemplate(redisConnectionFactory);
     }
 

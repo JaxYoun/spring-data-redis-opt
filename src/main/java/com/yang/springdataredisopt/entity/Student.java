@@ -1,7 +1,8 @@
 package com.yang.springdataredisopt.entity;
 
-import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.io.Serializable;
 
 /**
  * @author: Yang
@@ -9,8 +10,8 @@ import lombok.Data;
  * @description:
  */
 @Data
-@Builder
-public class Student {
+@NoArgsConstructor
+public class Student implements Serializable {
 
     private String clazz;
 
